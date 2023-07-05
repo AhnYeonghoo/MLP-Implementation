@@ -3,6 +3,27 @@
 const int MINIMUM = -0.5;
 const int MAXIMUM = 0.5;
 
+// activation function
+int stepFunction(int s)
+{
+	return s >= 0 ? 1 : 0;
+}
+
+double sigmoidFunction(double x)
+{
+	return 1 / (1 + std::exp(-x));
+}
+
+double sigmoidDerivative(double x)
+{
+	return sigmoidFunction(x) * (1 - sigmoidFunction(x));
+}
+
+double relu(double x)
+{
+	return x >= 0 ? x : 0;
+}
+
 double Neuron::getBias() const
 {
 	return this->bias;
@@ -21,11 +42,6 @@ void Neuron::setBias(double& bias)
 void Neuron::setWeight(std::vector<double>& weight)
 {
 	this->weight = weight;
-}
-
-int Neuron::stepFunction(int s) const
-{
-	return s >= 0 ? 1 : 0;
 }
 
 Neuron::Neuron(size_t input_size)
@@ -50,7 +66,9 @@ double Neuron::compute(const std::vector<double>& x) const
 		wx += weight.at(i) * x[i];
 	}
 
-	return stepFunction(wx + this->bias);
+	lastV = wx + this->bias;
+	lastX = x;
+	return sigmoidFunction(lastV);
 	
 }
 
@@ -73,11 +91,33 @@ void Neuron::train(double a, const std::vector<std::pair<std::vector<double>, do
 
 		for (std::size_t j = 0; j < input_size; j++)
 		{
-			this->weight[j] += a * (t - o) * train_data[i].first[j];
+			this->weight[j] += a * sigmoidDerivative(lastV) * (t - o) * train_data[i].first[j];
 		}
-		this->bias += a * (t - o);
+		this->bias += a * sigmoidDerivative(lastV) * (t - o);
+		
+		this->lastD = sigmoidDerivative(lastV) * (t - o);
+	
 	}
 
+}
+
+void Neuron::train(double a, double e, const std::vector<double>& train_data)
+{
+	std::size_t input_size = train_data.size();
+	
+	if (input_size != this->weight.size())
+	{
+		std::cerr << "Input size != weight size";
+	}
+	
+	for (std::size_t j = 0; j < input_size; j++)
+	{
+		this->weight[j] += a * sigmoidDerivative(lastV) * e * train_data[j];
+	}
+	
+	this->bias += a * sigmoidDerivative(lastV) * e;
+	this->lastD = sigmoidDerivative(lastV) * e;
+	
 }
 
 void Neuron::initialized()
@@ -89,3 +129,27 @@ void Neuron::initialized()
 
 	this->bias = rand() % (MAXIMUM - MINIMUM + 1) + MINIMUM;
 }
+
+
+
+std::size_t Neuron::inputSize() const
+{
+	return this->weight.size();
+}
+
+
+double Neuron::getLastV() const
+{
+	return this->lastV;
+}
+
+double Neuron::getLastD() const
+{
+	return this->lastD;
+}
+
+const std::vector<double>& Neuron::getLastX() const
+{
+	return this->lastX;
+}
+
