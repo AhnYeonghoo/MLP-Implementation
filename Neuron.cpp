@@ -1,7 +1,6 @@
 #include "Neuron.hpp"
 
-const int MINIMUM = -0.5;
-const int MAXIMUM = 0.5;
+
 
 // activation function
 int stepFunction(int s)
@@ -124,10 +123,10 @@ void Neuron::initialized()
 {
 	for (std::size_t i = 0; i < weight.size(); i++)
 	{
-		this->weight.at(i) = rand() % (MAXIMUM - MINIMUM + 1) + MINIMUM;
+		this->weight.at(i) = rand() % 3;
 	}
 
-	this->bias = rand() % (MAXIMUM - MINIMUM + 1) + MINIMUM;
+	this->bias = -1;
 }
 
 

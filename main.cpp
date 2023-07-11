@@ -1,7 +1,7 @@
 #include "Neuron.hpp"
 #include "Network.hpp"
 
-int main()
+int mainTemp()
 {
 	/*Neuron and_neuron(2);
 
